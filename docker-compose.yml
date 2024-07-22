@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - '5432:5432'
+    #volumes:
+    #  - ./.db/pg-data:/var/lib/postgresql/data:z
+    #  - ./resources/dump.sql:/docker-entrypoint-initdb.d/dump.sql:z
+    networks:
+      - app-network
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: camproject
+   
+  app:
+    build:
+      context: .
+      dockerfile: docker/DOCKERFILE
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/var/www/html/report/watch-data-manuel-report/src
+    networks:
+      - app-network
+    depends_on:
+      - postgres
+    command: >
+      bash -c "sleep 10 && npx prisma migrate deploy && npx prisma generate  && node index.js"
+    environment:
+      - DATABASE_URL=postgresql://postgres:1234@postgres:5432/camproject?schema=public
+      - EXECUTION_PORT=3000
+
+networks:
+  app-network:
+    driver: bridge

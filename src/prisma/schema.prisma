@@ -1,0 +1,199 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// AppUser model
+model AppUser {
+  id                 Int                @id @default(autoincrement())
+  branch_id          Int?
+  branch             Branch?            @relation(fields: [branch_id], references: [id])
+  username           String             @unique
+  password_hash      String
+  email              String?            @unique
+  full_name          String?            @db.VarChar(100)
+  role               String?
+  last_login         DateTime?
+  account_status     String?
+  createdAt          DateTime           @default(now())
+  updatedAt           DateTime           @default(now())
+  user_camera_access UserCameraAccess[]
+  security_log       SecurityLog[]
+ 
+}
+
+
+
+model Branch {
+  id       Int     @id @default(autoincrement())
+  name     String
+  location String?
+
+  company_id   Int
+  company      Company        @relation(fields: [company_id], references: [id])
+  // Camera       Camera[]
+  AppUser      AppUser[]
+
+
+  createdAt    DateTime       @default(now())
+  updatedAt     DateTime       @default(now())
+}
+
+model Company {
+  id                  Int      @id @default(autoincrement())
+  name                String
+  registration_number String   @unique
+  industry            String
+  website             String
+  phone_number        String
+  address             String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @default(now())
+  Branch              Branch[]
+}
+
+model Camera {
+  id               Int                @id @default(autoincrement())
+  branch_id        Int
+  // branch           Branch             @relation(fields: [branchID], references: [id])
+  user             String //cam user
+  password         String //cam password         
+  model            String
+  resolution       String? // SD, HD, Full HD
+  install_date     DateTime?
+  type             String // Analog, Digital
+  status           String? // Active, Passive, Freeze, ...
+  protocol         String? // RTSP, HTTP, FTP, TCP, POP3, ICMP, SNMP
+  host             String? // validation is required.
+  port             Int
+  label            String // validation is required.
+  channel          Int
+  path             String?
+  aditional        Json
+  Incident         Incident[]
+  UserCameraAccess UserCameraAccess[]
+  Person           Person[]
+ MaintenanceLog   MaintenanceLog[]
+
+  createdAt        DateTime           @default(now())
+  updatedAt         DateTime           @default(now())
+}
+
+// User Access model
+model UserCameraAccess {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  camera_id Int
+  user      AppUser  @relation(fields: [user_id], references: [id])
+  camera    Camera   @relation(fields: [camera_id], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt  DateTime @default(now())
+}
+
+// Incident model
+model Incident {
+  id                 Int       @id @default(autoincrement())
+  camera_id          Int
+  incident_date      DateTime?
+  description        String?
+  resolved           Boolean?
+  resolution_details String?
+  createdAt          DateTime  @default(now())
+  updatedAt           DateTime  @default(now())
+  camera             Camera    @relation(fields: [camera_id], references: [id])
+}
+
+// Person model
+model Person {
+  id             Int         @id @default(autoincrement())
+  camera_id      Int
+  camera         Camera      @relation(fields: [camera_id], references: [id])
+  detection_time DateTime?
+  label          String?
+  confidence     Float?
+  createdAt      DateTime    @default(now())
+  updatedAt       DateTime    @default(now())
+  enter_exit     EnterExit[]
+  gender         Gender[]
+  age            Age[]
+  movement       Movement[]
+}
+
+// EnterExit model
+model EnterExit {
+  id         Int       @id @default(autoincrement())
+  person_id  Int
+  event_time DateTime?
+  event_type String?   @db.VarChar(10)
+  createdAt  DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+  person     Person    @relation(fields: [person_id], references: [id])
+}
+
+// Gender model
+model Gender {
+  id         Int      @id @default(autoincrement())
+  person_id  Int
+  gender     String?
+  confidence Float?
+  createdAt  DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  person     Person   @relation(fields: [person_id], references: [id])
+}
+
+// Age model
+model Age {
+  id         Int      @id @default(autoincrement())
+  person_id  Int
+  age_range  String?
+  confidence Float?
+  createdAt  DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  person     Person   @relation(fields: [person_id], references: [id])
+}
+
+// Movement model
+model Movement {
+  id            Int       @id @default(autoincrement())
+  person_id     Int
+  movement_type String?
+  start_time    DateTime?
+  end_time      DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt      DateTime  @default(now())
+  person        Person    @relation(fields: [person_id], references: [id])
+}
+
+// SecurityLog model
+model SecurityLog {
+  id                 Int       @id @default(autoincrement())
+  user_id            Int
+  action_description String?
+  log_time           DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt           DateTime  @default(now())
+  user               AppUser   @relation(fields: [user_id], references: [id])
+}
+
+// MaIntenanceLog model
+model MaintenanceLog {
+  id                 Int       @id @default(autoincrement())
+  camera_id          Int
+  action_description String?
+  log_time           DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt           DateTime  @default(now())
+  camera             Camera    @relation(fields: [camera_id], references: [id])
+}
+
+
+
+
+
+
+

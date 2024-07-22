@@ -1,0 +1,48 @@
+# Use an official Node.js runtime as a base image
+FROM node:16
+
+# Define an argument with a default value
+ARG POSTGRES_PASS=1234
+
+# Set an environment variable with the value of the argument
+ENV APP_POSTGRES_PASS=${POSTGRES_PASS}
+
+ARG POSTGRES_USER=postgres
+
+# Set an environment variable with the value of the argument
+ENV APP_POSTGRES_USER=${POSTGRES_USER}
+
+ARG POSTGRES_DBNAME=camproject
+
+# Set an environment variable with the value of the argument
+ENV APP_POSTGRES_DBNAME=${POSTGRES_DBNAME}
+
+ARG APP_POSTGRES_CONNECTION_STRING=postgresql://postgres:${POSTGRES_PASS}@postgres:5432/camproject?schema=public
+
+# Set an environment variable with the value of the argument
+ENV POSTGRES_CONNECTION_STRING=${APP_POSTGRES_CONNECTION_STRING}
+
+ARG APP_EXECUTION_PORT=3000
+ENV EXECUTION_PORT=${APP_EXECUTION_PORT}
+
+# Set the working directory in the container
+WORKDIR /var/www/html/report/watch-data-manuel-report/docker
+
+# Copy package.json and package-lock.json to the working directory
+COPY package*.json ./
+
+# Install app dependencies
+RUN npm install
+
+# Copy the application code into the container
+COPY ./src .
+
+# Install PM2 process manager
+#RUN npm install pm2 -g
+
+# Command to run your application
+
+
+# Expose the port on which your app will run
+EXPOSE ${EXECUTION_PORT}
+
